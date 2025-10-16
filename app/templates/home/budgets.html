@@ -1,0 +1,107 @@
+<!-- Create a new file: templates/home/budgets.html -->
+{% extends "base.html" %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block body %}
+<div class="shadow-card">
+    <h2>Budget Dashboard</h2>
+
+    <!-- Set New Budget Form -->
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                {{ form.category.label(class="sr-only") }}
+                {{ form.category(class="form-control") }}
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.amount.label(class="sr-only") }}
+                {{ form.amount(placeholder="Amount", class="form-control") }}
+            </div>
+            <div class="form-group col-md-2">
+                {{ form.submit(class="btn btn-primary btn-block") }}
+            </div>
+        </div>
+    </form>
+    <hr>
+
+    <!-- Budget Status Cards -->
+    {% if budgets_data %}
+        <h3>Current Month's Status</h3>
+        {% for item in budgets_data %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <h5 class="card-title">{{ item.category_name }}</h5>
+                <p class="card-text">
+                    Spent: ₹{{ "%.2f"|format(item.spent_amount) }} of ₹{{ "%.2f"|format(item.budget_amount) }}
+                </p>
+                <div class="progress">
+                    {% set percentage = (item.spent_amount / item.budget_amount) * 100 %}
+                    {% if percentage > 100 %}
+                        {% set progress_color = 'bg-danger' %}
+                    {% elif percentage > 75 %}
+                        {% set progress_color = 'bg-warning' %}
+                    {% else %}
+                        {% set progress_color = 'bg-success' %}
+                    {% endif %}
+                    <div class="progress-bar {{ progress_color }}" role="progressbar" style="width: {{ percentage|round|int }}%;" aria-valuenow="{{ item.spent_amount }}" aria-valuemin="0" aria-valuemax="{{ item.budget_amount }}">
+                        {{ "%.0f"|format(percentage) }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>No budgets set yet. Create one above!</p>
+    {% endif %}
+
+    <!-- Budget vs. Actual Chart -->
+    <h3 class="mt-5">Budget vs. Actual Spending</h3>
+    <canvas id="budgetChart" width="400" height="200"></canvas>
+</div>
+
+<script>
+    fetch('/chart-data')
+        .then(response => response.json())
+        .then(data => {
+            const labels = data.budget_vs_actual.labels;
+            const budgetData = data.budget_vs_actual.budgets;
+            const actualData = data.budget_vs_actual.actual;
+
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Budget',
+                            data: budgetData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Actual Spending',
+                            data: actualData,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+</script>
+{% endblock %}

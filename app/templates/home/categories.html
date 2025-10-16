@@ -1,0 +1,36 @@
+<!-- Create a new file: templates/home/categories.html -->
+{% extends "base.html" %}
+
+{% block body %}
+<div class="shadow-card">
+    <h2>Manage Categories</h2>
+    
+    <!-- Add New Category Form -->
+    <form method="POST" class="form-inline">
+        {{ form.hidden_tag() }}
+        <div class="form-group mb-2">
+            {{ form.name.label(class="sr-only") }}
+            {{ form.name(placeholder="New Category Name", class="form-control") }}
+        </div>
+        {{ form.submit(class="btn btn-primary mb-2") }}
+    </form>
+    <hr>
+
+    <!-- List Existing Categories -->
+    <h3>Your Categories</h3>
+    {% if categories %}
+        <ul class="list-group">
+            {% for category in categories %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ category.name }}
+                    <form action="{{ url_for('Home.delete_category', category_id=category.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this category and all its statements?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You haven't created any categories yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

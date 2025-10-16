@@ -1,0 +1,32 @@
+<!-- In templates/home/new_statement.html -->
+
+<!-- Find the form part and replace the description field -->
+{% extends "base.html" %}
+
+{% block body %}
+<div class="shadow-card">
+    <!-- ... other HTML ... -->
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        
+        <!-- Keep this description field for extra detail -->
+        <div class="form-group">
+            {{ form.description.label }}
+            {{ form.description() }}
+        </div>
+
+        <!-- NEW: Category Dropdown -->
+        <div class="form-group">
+            {{ form.category.label }}
+            {{ form.category(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+            {{ form.amount.label }}
+            {{ form.amount() }}
+        </div>
+        
+        <!-- ... rest of the form ... -->
+    </form>
+</div>
+{% endblock %}
